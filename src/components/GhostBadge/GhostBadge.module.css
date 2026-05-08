@@ -1,0 +1,66 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.size-sm {
+  font-size: 0.66rem;
+  padding: 2px 8px 2px 7px;
+}
+
+.size-md {
+  font-size: 0.72rem;
+}
+
+.type-poltergeist {
+  color: #d49a5c;
+  background: rgba(212, 154, 92, 0.12);
+  border-color: rgba(212, 154, 92, 0.3);
+}
+
+.type-wraith {
+  color: #9a7fb8;
+  background: rgba(154, 127, 184, 0.12);
+  border-color: rgba(154, 127, 184, 0.3);
+}
+
+.type-friendly {
+  color: #7a9a6f;
+  background: rgba(122, 154, 111, 0.12);
+  border-color: rgba(122, 154, 111, 0.3);
+}
+
+.type-banshee {
+  color: #6fa3b8;
+  background: rgba(111, 163, 184, 0.12);
+  border-color: rgba(111, 163, 184, 0.3);
+}
+
+.type-demon {
+  color: #c95a5c;
+  background: rgba(184, 72, 74, 0.14);
+  border-color: rgba(184, 72, 74, 0.4);
+}
+
+.type-shade {
+  color: #8e8a98;
+  background: rgba(142, 138, 152, 0.12);
+  border-color: rgba(142, 138, 152, 0.3);
+}

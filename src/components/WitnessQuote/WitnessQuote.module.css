@@ -1,0 +1,49 @@
+.figure {
+  position: relative;
+  margin: 0;
+  padding: var(--space-5) var(--space-5) var(--space-4) var(--space-7);
+  background: var(--color-bg-elevated);
+  border-left: 2px solid var(--color-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.mark {
+  position: absolute;
+  top: -8px;
+  left: 14px;
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--color-accent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.witness {
+  font-weight: 500;
+}
+
+.date {
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
+}
