@@ -99,37 +99,134 @@ To verify your change, you need to look at the `demon` badge in **every place it
 
 ---
 
-### Part 2 — Edit _with_ Storybook _(~15 min)_
+### Part 2 — Edit _with_ Storybook _(~20 min)_
 
 **For this part, do not open the app at `localhost:5173` until you're done. Use Storybook only.**
 
-The component is `PropertyCard`. It currently has **no story file**.
+We'll build up in three steps: edit a story → create a story → use stories to design a feature.
 
-**Step 1.** Create `src/components/PropertyCard/PropertyCard.stories.jsx`. Look at how `Button.stories.jsx` is written for the format. Write at least these stories:
+#### Step 1 — Edit an existing story _(~3 min)_
 
-- `Default` — a typical property
-- `Catastrophic` — a property with `hauntingRating: 5` (a 5-skull haunting)
-- `Friendly` — a property with `primaryHaunting: 'friendly'`
-- `NonNegotiable` — a property where `negotiable: false`
-- `Expensive` — a property with `price > 2000000`
+Open `src/components/Button/Button.stories.jsx`. Read through it. Notice:
 
-You can import sample data from `src/data/properties.js` or pass a hand-built object as `args`.
+- `export default { ... }` defines the component meta (title, controls, etc.)
+- Each named `export` is a separate story
+- `args` are the props passed to the component
 
-> 💡 `PropertyCard` uses `<Link>` from `react-router-dom`, which needs a router context. Wrap your stories with a `MemoryRouter` decorator — ask if you're not sure how.
+Add a new story called `Haunted` with whatever props you like — change the label, the size, the variant. Save the file. Watch Storybook hot-reload your new story into the sidebar.
 
-**Step 2.** Now add a feature: when `property.hauntingRating === 5`, the card should display a **`CATASTROPHIC`** banner overlay on the image (your choice of placement and styling, but it should be obvious). Use your `Catastrophic` story to design and verify this. The other ratings should look exactly the same as before.
+That's a story. That's the whole format.
+
+#### Step 2 — Create a story file from scratch _(~7 min)_
+
+We're going to start with one of the simplest components in the app: `PriceTag`.
+
+Create `src/components/PriceTag/PriceTag.stories.jsx`. The component takes only three props (read `PriceTag.jsx` to confirm):
+
+- `price` — number (e.g. `480000`)
+- `negotiable` — boolean
+- `size` — `'sm' | 'md' | 'lg'`
+
+Write at least these stories:
+
+- `Default` — a typical price (try `1250000`)
+- `Negotiable` — `negotiable={true}`
+- `Bargain` — a low price like `295000`
+- `Estate` — a very high price like `3200000`
+- `Small`, `Large` — one for each non-default size
+
+Use `Button.stories.jsx` as a template. There's no router involved, no internal SVG, no decorators — just three props.
+
+#### Step 3 — Make a feature change, designed in Storybook _(~10 min)_
+
+Now add a feature to `PriceTag`: **when the price is greater than `$2,000,000`, the price text should be rendered in the accent gold color (`var(--color-accent)`)**, as a subtle premium indicator. Prices at or below that should look exactly the same as before.
+
+**Use your `Estate` story to design this.** Don't open the app. Don't navigate to a property detail. Just edit `PriceTag.module.css` (and `.jsx` if needed), save, and watch Storybook update.
+
+When you're done, _then_ open `localhost:5173` and confirm the change appears correctly on Listings (Ravenscroft Estate at \$2.8M, Forgotten Penthouse at \$3.2M, Iron Gate Mansion is _just under_ at \$1.85M and should look unchanged) and on their detail pages.
 
 **Track this:**
 
-- ⏱ How long did it take this time, compared to Part 1?
+- ⏱ How long did Step 3 take, compared to your `GhostBadge` change in Part 1?
 - 🔁 How many times did you switch between the editor and the browser?
-- 🤔 Where would Storybook have helped in Part 1?
+- 🤔 Where would Storybook have saved you time in Part 1?
 
 ---
 
-### Bonus _(if you finish early)_
+### Bonus Challenges _(if you finish early)_
 
-Pick any other component without a story (`HauntingRating`, `PriceTag`, `GhostBadge`, `AgentCard`, `GhostCard`, `WitnessQuote`, `PageHeader`) and write its `*.stories.jsx`. Cover every prop variant you can think of.
+Pick any of these — they get progressively harder. You don't have to do them in order.
+
+#### 🥉 Challenge 1 — Cover an existing component with stories
+
+Pick any component _without_ a story file (`HauntingRating`, `GhostBadge`, `AgentCard`, `GhostCard`, `WitnessQuote`, `PageHeader`, `Footer`, `Navbar`) and write its `*.stories.jsx`. Cover every prop variant you can think of, including edge cases:
+
+- `HauntingRating` with `rating={0}` all the way up to `rating={5}`, plus `showLabel`, plus all three sizes
+- `GhostBadge` with each of the six `type` values, plus both sizes
+- `AgentCard` with `compact={true}` and `compact={false}`
+
+A good rule of thumb: **if a prop has a finite set of values, you should have a story for each value.**
+
+#### 🥈 Challenge 2 — Write stories for `PropertyCard` (and learn _decorators_)
+
+`PropertyCard` is the trickiest component in the app to write a story for, because it uses `<Link>` from `react-router-dom`. If you try the obvious thing, Storybook will throw a runtime error: `useNavigate() may be used only in the context of a <Router> component`.
+
+The fix is a Storybook concept called a **decorator** — a function that wraps every story in some context. In your story file:
+
+```jsx
+import { MemoryRouter } from 'react-router-dom'
+import PropertyCard from './PropertyCard'
+
+export default {
+  title: 'Components/PropertyCard',
+  component: PropertyCard,
+  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+}
+```
+
+Now write at least these stories (you can pull sample data from `src/data/properties.js` or hand-build a property object):
+
+- `Default` — a typical property
+- `Catastrophic` — `hauntingRating: 5`
+- `Friendly` — `primaryHaunting: 'friendly'`
+- `NonNegotiable` — `negotiable: false`
+
+> Decorators are how you handle anything that needs context: routers, theme providers, auth, redux. Memorize the pattern — you'll use it constantly.
+
+#### 🥈 Challenge 3 — Add a new haunting type, end-to-end
+
+We currently support six ghost types: `poltergeist`, `wraith`, `friendly`, `banshee`, `demon`, `shade`. Add a seventh — your choice. Suggestions: `wendigo`, `revenant`, `doppelganger`, `kelpie`, `imp`.
+
+To do this, you'll need to touch:
+
+1. `GhostBadge.jsx` — add the label
+2. `GhostBadge.module.css` — add a color variant (`.type-yourtype`)
+3. Its story file — add a `YourType` story
+4. `src/data/ghosts.js` — assign the new type to a ghost
+5. `src/data/properties.js` — set `primaryHaunting` of one property to the new type
+6. `Listings` and `Ghosts` page filters — add the new type to the filter list
+
+Notice how Storybook makes step 3 trivial — you can verify the new variant looks right in seconds, _before_ you wire it into any data or pages.
+
+#### 🥇 Challenge 4 — Build a brand new component from scratch
+
+Build a new component, with its own folder, styles, and stories file, and use it somewhere in the app. Pick **one** of these (or pitch your own):
+
+**`AmenityTag`** _(easiest)_ — a small pill-shaped tag for property features. Props: `icon` (optional), `label`, `tone` (`'default' | 'warning' | 'reassuring'`). Use it in `PropertyDetail` to show amenities like:
+
+> ✦ Original fixtures · ⚠ Sealed sun room · 🕯 Recently consecrated
+
+**`OpenHouseBadge`** _(medium)_ — a date/time badge advertising an upcoming viewing. Props: `date` (Date or ISO string), `startTime`, `endTime`, `byAppointmentOnly` (boolean). Use it on a few `PropertyCard`s in the Listings page (you'll need to add `openHouse` data to some properties).
+
+**`HauntingTimeline`** _(hard)_ — a vertical timeline of incidents for a property. Each entry shows date + description + severity. Props: an array of `{ date, description, severity }`. Use it in `PropertyDetail` instead of (or in addition to) the current `Disclosed Incidents` list. You'll need to add timestamped incidents to one or two properties.
+
+**Requirements regardless of which you pick:**
+
+- Live in `src/components/YourComponent/` with the standard four files (`.jsx`, `.module.css`, `.stories.jsx`, `index.js`)
+- Have at least 3 stories covering different prop combinations
+- Be actually used somewhere in the app
+- Match the existing visual style (use the design tokens in `src/styles/global.css` — never hardcode colors)
+- Follow the codebase conventions (no semicolons, CSS modules, plain JS)
 
 ---
 
