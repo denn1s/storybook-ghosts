@@ -1,0 +1,80 @@
+# =============================================================================
+# Hello World — the simplest possible GitHub Actions workflow.
+# Useful for showing the basic structure: name → on → jobs → steps.
+# Every step here is harmless (just shell commands), so it's safe to play with.
+# =============================================================================
+
+name: Hello World
+
+# Trigger on pushes to any branch, OR when you click "Run workflow" in the UI.
+on: [push, workflow_dispatch]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: greeting + some info about the runner.
+  # ---------------------------------------------------------------------------
+  say-hello:
+    runs-on: ubuntu-latest
+    steps:
+      # A simple one-line shell command.
+      - name: Greet the world
+        run: echo "Hello from GitHub Actions!"
+
+      # Multi-line shell using the "|" YAML block syntax.
+      # Each line runs in the same shell session.
+      - name: Show info about the runner
+        run: |
+          echo "Running on: $(uname -a)"
+          echo "Current directory: $(pwd)"
+          echo "Today is: $(date)"
+
+      # ${{ ... }} is GitHub Actions expression syntax. It pulls values from
+      # the "github" context, which has metadata about who/what triggered this.
+      - name: Show info about the event
+        run: |
+          echo "Triggered by user: ${{ github.actor }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Branch / ref: ${{ github.ref }}"
+          echo "Repository: ${{ github.repository }}"
+
+      # Steps can also set environment variables for later steps.
+      # Here we save a value into the special $GITHUB_ENV file.
+      - name: Set a variable for later steps
+        run: echo "FAVORITE_FRAMEWORK=React" >> $GITHUB_ENV
+
+      # Use the variable we just set. Notice it's available as a normal env var.
+      - name: Use the variable
+        run: echo "My favorite framework is $FAVORITE_FRAMEWORK"
+
+      # Demonstrates conditional steps with "if:".
+      # This step only runs if the event was a push (not a manual trigger).
+      - name: Only run on push events
+        if: github.event_name == 'push'
+        run: echo "This only prints when triggered by a git push."
+
+      - name: Goodbye
+        run: echo "Done with the first job."
+
+  # ---------------------------------------------------------------------------
+  # Job 2: depends on the first one.
+  # By default jobs run in parallel; "needs:" forces this one to wait until
+  # "say-hello" finishes successfully. If "say-hello" fails, this is skipped.
+  # ---------------------------------------------------------------------------
+  follow-up:
+    runs-on: ubuntu-latest
+    needs: say-hello
+    steps:
+      - name: Acknowledge the previous job
+        run: echo "The 'say-hello' job finished — now it's my turn."
+
+      # A tiny "fake build" loop to make the logs feel like real work.
+      - name: Pretend to do some work
+        run: |
+          for i in 1 2 3; do
+            echo "Working... step $i of 3"
+            sleep 1
+          done
+          echo "All done!"
+
+      - name: Final message
+        run: echo "Workflow complete. Thanks for watching!"
