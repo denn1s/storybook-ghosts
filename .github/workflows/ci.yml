@@ -1,0 +1,101 @@
+# =============================================================================
+# CI Workflow — runs automatically to check that the project still works.
+# This file lives in .github/workflows/ — GitHub looks here automatically.
+# The filename ("ci.yml") can be anything ending in .yml or .yaml.
+# =============================================================================
+
+# "name" is just the label shown in the GitHub "Actions" tab.
+# If you omit it, GitHub uses the filename instead.
+name: CI
+
+# -----------------------------------------------------------------------------
+# "on" defines the EVENTS that trigger this workflow.
+# You can list one event or many. Common ones: push, pull_request, schedule.
+# -----------------------------------------------------------------------------
+on:
+  # Run every time someone pushes commits to the "main" branch.
+  push:
+    branches: [main]
+
+  # Run every time someone opens or updates a pull request targeting "main".
+  # This is what lets you put a green/red checkmark on PRs.
+  pull_request:
+    branches: [main]
+
+  # Adds a "Run workflow" button in the GitHub UI so you can trigger it by hand.
+  workflow_dispatch:
+
+# -----------------------------------------------------------------------------
+# "jobs" is the list of independent jobs that make up this workflow.
+# Each job runs in its own fresh virtual machine. Jobs run in PARALLEL by
+# default — use "needs:" if you want one to wait for another.
+# -----------------------------------------------------------------------------
+jobs:
+  # "build" is the ID of this job (you choose the name). It appears in logs
+  # and is also how you'd reference it from another job (e.g. needs: build).
+  build:
+    # The operating system / VM image the job runs on.
+    # Options include: ubuntu-latest, windows-latest, macos-latest.
+    # GitHub spins up a brand-new VM for every run — nothing persists between runs.
+    runs-on: ubuntu-latest
+
+    # "steps" is the ordered list of things this job will do.
+    # Steps run SEQUENTIALLY, top to bottom. If one fails, the rest are skipped.
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1: Clone the repo into the runner.
+      # "uses:" pulls in a reusable action from the GitHub Marketplace.
+      # "actions/checkout" is maintained by GitHub itself.
+      # The "@v4" pins the major version — important for reproducibility.
+      # Without this step, the runner has NO access to your code.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Step 2: Install Node.js on the runner.
+      # "with:" passes parameters into the action (like function arguments).
+      #   - node-version: which Node version to install
+      #   - cache: 'npm' tells the action to cache the npm download folder
+      #     between runs, so installs are much faster after the first time.
+      # -----------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # -----------------------------------------------------------------------
+      # Step 3: Install dependencies.
+      # "run:" executes a shell command directly on the runner (bash by default).
+      # We use "npm ci" instead of "npm install" because:
+      #   - it's faster
+      #   - it installs EXACTLY what's in package-lock.json (reproducible builds)
+      #   - it fails if package.json and the lockfile are out of sync
+      # -----------------------------------------------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # -----------------------------------------------------------------------
+      # Step 4: Run the linter (ESLint, defined in package.json scripts).
+      # If lint errors are found, this step exits with a non-zero code and
+      # the whole workflow is marked as failed (red X on the commit/PR).
+      # -----------------------------------------------------------------------
+      - name: Run ESLint
+        run: npm run lint
+
+      # -----------------------------------------------------------------------
+      # Step 5: Build the production version of the Vite app.
+      # This catches things like import errors or syntax problems that the
+      # dev server might tolerate but a real build would not.
+      # -----------------------------------------------------------------------
+      - name: Build project
+        run: npm run build
+
+      # -----------------------------------------------------------------------
+      # Step 6: Build Storybook to confirm all stories still render.
+      # This is the final gate — if every previous step passed AND Storybook
+      # builds, we're confident the PR/push is safe to merge.
+      # -----------------------------------------------------------------------
+      - name: Build Storybook
+        run: npm run build-storybook
